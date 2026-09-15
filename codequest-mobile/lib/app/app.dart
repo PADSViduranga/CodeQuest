@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import '../screens/home/home_screen.dart';
+
+import '../screens/auth/login_screen.dart';
 
 class CodeQuestApp extends StatelessWidget {
   const CodeQuestApp({super.key});
@@ -15,7 +16,7 @@ class CodeQuestApp extends StatelessWidget {
         ),
         useMaterial3: true,
       ),
-      home: const HomeScreen(),
+      home: const LoginScreen(),
     );
   }
 }
