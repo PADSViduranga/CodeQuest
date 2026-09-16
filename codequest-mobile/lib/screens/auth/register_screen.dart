@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
 
-import '../../services/auth_service.dart';
 import '../../core/network/api_client.dart';
-import '../home/home_screen.dart';
-import 'register_screen.dart';
+import '../../services/auth_service.dart';
+import 'login_screen.dart';
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+class RegisterScreen extends StatefulWidget {
+  const RegisterScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  State<RegisterScreen> createState() => _RegisterScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _RegisterScreenState extends State<RegisterScreen> {
+  final usernameController = TextEditingController();
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
 
@@ -28,12 +28,13 @@ class _LoginScreenState extends State<LoginScreen> {
     authService = AuthService(apiClient: ApiClient());
   }
 
-  Future<void> login() async {
+  Future<void> register() async {
+    final username = usernameController.text.trim();
     final email = emailController.text.trim();
     final password = passwordController.text;
 
-    if (email.isEmpty || password.isEmpty) {
-      showMessage('Please enter your email and password.');
+    if (username.isEmpty || email.isEmpty || password.isEmpty) {
+      showMessage('Please complete all fields.');
       return;
     }
 
@@ -42,7 +43,8 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     try {
-      final response = await authService.login(
+      final response = await authService.register(
+        username: username,
         email: email,
         password: password,
       );
@@ -53,12 +55,12 @@ class _LoginScreenState extends State<LoginScreen> {
 
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const HomeScreen()),
+        MaterialPageRoute(builder: (context) => const LoginScreen()),
       );
     } catch (e) {
       if (!mounted) return;
 
-      showMessage('Login failed. Please check your email and password.');
+      showMessage('Registration failed. Please check your details.');
     } finally {
       if (mounted) {
         setState(() {
@@ -75,6 +77,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   void dispose() {
+    usernameController.dispose();
     emailController.dispose();
     passwordController.dispose();
     super.dispose();
@@ -83,26 +86,37 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('CodeQuest')),
+      appBar: AppBar(title: const Text('Create Account'), centerTitle: true),
       body: SafeArea(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const Text(
-                'Welcome to CodeQuest',
+                'Join CodeQuest',
                 style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
               ),
 
               const SizedBox(height: 8),
 
               const Text(
-                'Login to continue your coding journey',
+                'Create your account and start learning',
                 textAlign: TextAlign.center,
               ),
 
               const SizedBox(height: 32),
+
+              TextField(
+                controller: usernameController,
+                decoration: const InputDecoration(
+                  labelText: 'Username',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.person),
+                ),
+              ),
+
+              const SizedBox(height: 16),
 
               TextField(
                 controller: emailController,
@@ -142,10 +156,14 @@ class _LoginScreenState extends State<LoginScreen> {
                 width: double.infinity,
                 height: 50,
                 child: ElevatedButton(
-                  onPressed: isLoading ? null : login,
+                  onPressed: isLoading ? null : register,
                   child: isLoading
-                      ? const CircularProgressIndicator()
-                      : const Text('Login', style: TextStyle(fontSize: 16)),
+                      ? const SizedBox(
+                          height: 24,
+                          width: 24,
+                          child: CircularProgressIndicator(),
+                        )
+                      : const Text('Register', style: TextStyle(fontSize: 16)),
                 ),
               ),
 
@@ -155,14 +173,14 @@ class _LoginScreenState extends State<LoginScreen> {
                 onPressed: isLoading
                     ? null
                     : () {
-                        Navigator.push(
+                        Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => const RegisterScreen(),
+                            builder: (context) => const LoginScreen(),
                           ),
                         );
                       },
-                child: const Text('Create an account'),
+                child: const Text('Already have an account? Login'),
               ),
             ],
           ),
